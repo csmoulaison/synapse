@@ -13,8 +13,6 @@
 #define logerr(msg) printf(msg)
 #define log(msg)    printf(msg)
 
-#define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
-#define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
 struct gl_render_state {
@@ -37,11 +35,6 @@ struct gl_render_state {
 	float cam_yaw;
 	float cam_pitch;
 };
-
-i32 wait_for_notify_callback(Display* display, XEvent* event, XPointer arg) 
-{
-    return (event->type == MapNotify) && (event->xmap.window == (Window)arg);
-}
 
 u32 compile_and_create_shader(const char* src, GLenum type) {
     u32 shader = glCreateShader(type);
@@ -77,12 +70,19 @@ void gl_render(struct gl_render_state state)
 	glUniformMatrix4fv(model_loc, 1, GL_FALSE, model[0]);
 
 	// View matrix
-
 	m4 view = GLM_MAT4_IDENTITY_INIT;
+	vec3 cam_pos = {0.0f, 0.0f, 3.0f};
+    vec3 cam_target = {0.0f, 0.0f, 0.0f};
+    vec3 cam_up = {0.0f, 1.0f, 0.0f};
 	glm_lookat(
+    	/*
     	state.cam_pos,
     	state.cam_target,
     	state.cam_up,
+    	*/
+    	cam_pos,
+    	cam_target,
+    	cam_up,
     	view);
 	u32 view_loc = glGetUniformLocation(state.shader_program, "view");
 	glUniformMatrix4fv(view_loc, 1, GL_FALSE, view[0]);
@@ -112,7 +112,6 @@ i32 main(i32 argc, char** argv)
     	logerr("Failure on XOpenDisplay.\n");
     	exit(1);
 	}
-
 
 	// Request a suitable framebuffer config
 	GLXFBConfig framebuf_conf;
@@ -270,7 +269,6 @@ i32 main(i32 argc, char** argv)
     	exit(1);
 	}
 
-	
 	// Bind GLX to window
 	glXMakeCurrent(display, window, ctx);
 
@@ -415,7 +413,6 @@ i32 main(i32 argc, char** argv)
 	{
 		i32 mouse_delta_x = 0;
 		i32 mouse_delta_y = 0;
-
     
 		state.clock++;
     	while(XPending(display)) 
