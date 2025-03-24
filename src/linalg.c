@@ -1,4 +1,6 @@
-#define FLOAT_EPSILON 0.00001
+#define FLOAT_EPSILON 0.0000001
+
+#include "clamp.c"
 
 struct v2 
 {
@@ -60,6 +62,37 @@ struct v3_line
     struct v3 a;
     struct v3 b;
 };
+
+struct v2 v2_new(float x, float y)
+{
+	return (struct v2){{{x, y}}};
+}
+
+struct v2 v2_add(struct v2 a, struct v2 b)
+{
+	return v2_new(a.x + b.x, a.y + b.y);
+}
+
+struct v2 v2_sub(struct v2 a, struct v2 b)
+{
+	return v2_new(a.x - b.x, a.y - b.y);
+}
+
+struct v2 v2_mul(struct v2 a, struct v2 b)
+{
+	return v2_new(a.x * b.x, a.y * b.y);
+}
+
+struct v2 v2_lerp(struct v2 a, struct v2 b, float t)
+{
+	float clamped_t = f_clamp(t, 0.0f, 1.0f);
+
+	struct v2 s = v2_new(clamped_t, clamped_t);
+	struct v2 v = v2_sub(a, b);
+	v = v2_mul(s, v);
+
+	return v2_add(a, v);
+}
 
 struct v3 v3_new(float x, float y, float z)
 {

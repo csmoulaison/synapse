@@ -254,6 +254,14 @@ struct x11_context x11_init()
 	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(7 * sizeof(float)));
 	glEnableVertexAttribArray(3);
 
+
+    	XWindowAttributes wattribs;
+    	XGetWindowAttributes(x11.display, x11.window, &wattribs);
+
+    	x11.winw = wattribs.width;
+    	x11.winh = wattribs.height;
+	glViewport(0, 0, x11.winw, x11.winh);
+
 	// Initialize input to 0
 	// TODO - can we just do x11.input = {}?
 	x11.input.mouse_delta_x = 0;

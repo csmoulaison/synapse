@@ -1,12 +1,11 @@
-#define MOUSE_INNER_BOUNDS 4
 #define BILLION 1000000000.0f
 
 void x11_loop(struct x11_context* x11) {
 	uint32_t running = 1;
 	while(running) 
     {
-		x11->input.mouse_delta_x = 0;
-		x11->input.mouse_delta_y = 0;
+	x11->input.mouse_delta_x = 0;
+	x11->input.mouse_delta_y = 0;
     
     	// TODO - loop - get x11->input, handle other events, call game, render.
 		while(XPending(x11->display)) 
@@ -55,10 +54,12 @@ void x11_loop(struct x11_context* x11) {
 					input->mouse_x = e.xmotion.x;
 					input->mouse_y = e.xmotion.y;
 
-					if(input->mouse_x < MOUSE_INNER_BOUNDS ||
-    					input->mouse_x > x11->winw - MOUSE_INNER_BOUNDS ||
-    					input->mouse_y < MOUSE_INNER_BOUNDS ||
-    					input->mouse_y > x11->winh - MOUSE_INNER_BOUNDS)
+					int32_t bounds_x = x11->winw / 4;
+					int32_t bounds_y = x11->winh / 4;
+					if(input->mouse_x < bounds_x ||
+    					input->mouse_x > x11->winw - bounds_x ||
+    					input->mouse_y < bounds_y ||
+    					input->mouse_y > x11->winh - bounds_y)
 					{
     					x11->mouse_just_warped = 1;
     					input->mouse_x = x11->winw / 2;
@@ -70,9 +71,9 @@ void x11_loop(struct x11_context* x11) {
         					e.xmotion.window,
         					0, 0, 0, 0,
         					x11->winw / 2, x11->winh / 2);
-    					XSync(x11->display, 1);
-					}
+    					XSync(x11->display, 0);
 
+					}
                     break;
                 }
         		case KeyPress:
@@ -103,6 +104,11 @@ void x11_loop(struct x11_context* x11) {
                 		case XK_d:
                 		{
                     		input_button_press(&x11->input.move_right);
+        					break;
+                		}
+                		case XK_space:
+                		{
+                    		input_button_press(&x11->input.bang_center);
         					break;
                 		}
                 		default:
@@ -165,6 +171,10 @@ void x11_loop(struct x11_context* x11) {
         	(float)time_cur.tv_nsec / BILLION - (float)x11->time_prev.tv_nsec / BILLION;
         x11->time_prev = time_cur;
     	x11->time_since_start += dt;
+
+		if(1 / dt < 90) {
+	    	printf("fps drop!: %f\n", 1 / dt);
+		}
 
 		game_update(
     		&x11->render_group, 

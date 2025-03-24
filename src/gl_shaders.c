@@ -26,14 +26,14 @@ const char* vertex_shader_src =
 	"vec2 dir = normalize(b_screen - a_screen);\n"
 	"vec2 normal = vec2(-dir.y, dir.x);\n"
 
-	"float width = 0.004;\n"
+	"float width = 0.002;\n"
 	"normal *= width / 2.0;\n"
 
 	"vec4 offset = vec4(normal * orientation * a_proj.z, 0.0, 0.0);\n"
 	"gl_Position = a_proj + offset;\n"
 
 	"vec3 base_color = mix(a_color, b_color, startedness);\n"
-	"my_color = mix(base_color, vec3(0.72, 0.72, 0.72), clamp(a_proj.z / 4, 0, 0.9));\n"
+	"my_color = mix(base_color, vec3(0.8, 0.8, 0.8), clamp(a_proj.z / 4, 0, 0.95));\n"
 "}\0";
 
 const char* frag_shader_src=

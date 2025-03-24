@@ -1,5 +1,5 @@
 // VOLATILE - this must match the number of buttons defined in input_state.
-#define INPUT_BUTTONS_LEN 4
+#define INPUT_BUTTONS_LEN 5
 
 struct input_button 
 {
@@ -24,6 +24,7 @@ struct input_state
         	struct input_button move_back;
         	struct input_button move_left;
         	struct input_button move_right;
+        	struct input_button bang_center;
     	};
 	};
 };
