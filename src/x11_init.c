@@ -45,12 +45,20 @@ struct x11_context x11_init()
         GLX_DEPTH_SIZE,	    24,
         GLX_STENCIL_SIZE,   8,
         GLX_DOUBLEBUFFER,   True,
-    	GLX_SAMPLE_BUFFERS, 1,
-    	GLX_SAMPLES,		4,
+    	//GLX_SAMPLE_BUFFERS, 1,
+    	//GLX_SAMPLES,		4,
     	None
 	};
-	int32_t configs_len;
 
+	int32_t glx_major;
+	int32_t glx_minor;
+	if(!glXQueryVersion(x11.display, &glx_major, &glx_minor)
+	   || ((glx_major == 1) && (glx_minor < 3)) || (glx_major < 1))
+	{
+		PANIC();
+	}
+
+	int32_t configs_len;
 	GLXFBConfig* fb_configs = glXChooseFBConfig(
     	x11.display,
     	DefaultScreen(x11.display),
@@ -60,9 +68,33 @@ struct x11_context x11_init()
 	{
     	PANIC();
 	}
-	
-	// TODO - get configuration with the most samples per pixel, for instance.
-	GLXFBConfig fb_config = fb_configs[0];
+
+	// Get the configuration and visual with the most samples per pixel
+	int32_t best_fb_config = -1;
+	int32_t most_samples = -1;
+	for(int32_t i = 0; i < configs_len; i++)
+	{
+		XVisualInfo* vis = glXGetVisualFromFBConfig(x11.display, fb_configs[i]);
+		if(vis)
+		{
+			int32_t sample_buffers;
+			int32_t samples;
+			glXGetFBConfigAttrib(x11.display, fb_configs[i], GLX_SAMPLE_BUFFERS, &sample_buffers);
+			glXGetFBConfigAttrib(x11.display, fb_configs[i], GLX_SAMPLES, &samples);
+
+			printf("matching fbconfig %d, buffers %d, samples %d\n", i, sample_buffers, samples);
+
+			if(best_fb_config < 0 || sample_buffers && samples > most_samples)
+			{
+				best_fb_config = i;
+				most_samples = samples;
+			}
+		}
+		XFree(vis);
+	}
+
+	//GLXFBConfig fb_config = fb_configs[0];
+	GLXFBConfig fb_config = fb_configs[best_fb_config];
 	XFree(fb_configs);
 
 	// Query visual info from the framebuffer config to be used in window creation
